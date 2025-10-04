@@ -1,5 +1,4 @@
-// Contract configuration
-export const CONTRACT_ADDRESS = "YOUR_DEPLOYED_CONTRACT_ADDRESS_HERE";
+export const CONTRACT_ADDRESS = "0x3c7259B276f94b157e2992BfFFDC1F58821626b5";
 
 export const CONTRACT_ABI = [
   {
@@ -28,6 +27,12 @@ export const CONTRACT_ABI = [
         "internalType": "uint256",
         "name": "unlockTimestamp",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ChronosVault.CapsuleType",
+        "name": "capsuleType",
+        "type": "uint8"
       }
     ],
     "name": "CapsuleSealed",
@@ -51,6 +56,82 @@ export const CONTRACT_ABI = [
     ],
     "name": "CapsuleUnsealed",
     "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "capsuleId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "trustee",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "currentApprovals",
+        "type": "uint256"
+      }
+    ],
+    "name": "MultiSigApproval",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "capsuleId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "VestingReleased",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_capsuleId",
+        "type": "uint256"
+      }
+    ],
+    "name": "approveMultiSigUnlock",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "capsuleCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [
@@ -106,19 +187,11 @@ export const CONTRACT_ABI = [
         "internalType": "bool",
         "name": "isUnsealed",
         "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "capsuleCount",
-    "outputs": [
+      },
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "enum ChronosVault.CapsuleType",
+        "name": "capsuleType",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -138,6 +211,132 @@ export const CONTRACT_ABI = [
         "internalType": "string",
         "name": "",
         "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_capsuleId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getMultiSigDetails",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "trustees",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "requiredApprovals",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "currentApprovals",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isExecuted",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_capsuleId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getVestingDetails",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "tokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "releasedAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "unlockTimestamps",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "unlockAmounts",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_capsuleId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "isTrustee",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "multiSigWills",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "requiredApprovals",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "currentApprovals",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isExecuted",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -175,6 +374,19 @@ export const CONTRACT_ABI = [
       }
     ],
     "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_capsuleId",
+        "type": "uint256"
+      }
+    ],
+    "name": "releaseVestedTokens",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -246,6 +458,82 @@ export const CONTRACT_ABI = [
   {
     "inputs": [
       {
+        "internalType": "address payable",
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_encryptedData",
+        "type": "bytes"
+      },
+      {
+        "internalType": "string",
+        "name": "_decryptionKey",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_unlockTimestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_trustees",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requiredApprovals",
+        "type": "uint256"
+      }
+    ],
+    "name": "sealMultiSigWill",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_encryptedData",
+        "type": "bytes"
+      },
+      {
+        "internalType": "string",
+        "name": "_decryptionKey",
+        "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "_tokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_unlockTimestamps",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_unlockAmounts",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "sealVestingSchedule",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_capsuleId",
         "type": "uint256"
@@ -254,6 +542,35 @@ export const CONTRACT_ABI = [
     "name": "unsealCapsule",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "vestingSchedules",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "tokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "releasedAmount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ];

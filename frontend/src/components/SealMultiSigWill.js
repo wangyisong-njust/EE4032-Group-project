@@ -3,16 +3,34 @@ import { BrowserProvider, Contract, parseEther } from 'ethers';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../contractConfig';
 import { generateKey, encryptMessage } from '../utils/encryption';
 
-const SealCapsule = ({ account }) => {
+const SealMultiSigWill = ({ account }) => {
   const [recipient, setRecipient] = useState('');
   const [message, setMessage] = useState('');
   const [unlockDate, setUnlockDate] = useState('');
   const [ethAmount, setEthAmount] = useState('0');
+  const [trustees, setTrustees] = useState(['', '', '']);
+  const [requiredApprovals, setRequiredApprovals] = useState(2);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleSealCapsule = async (e) => {
+  const handleTrusteeChange = (index, value) => {
+    const newTrustees = [...trustees];
+    newTrustees[index] = value;
+    setTrustees(newTrustees);
+  };
+
+  const addTrustee = () => {
+    setTrustees([...trustees, '']);
+  };
+
+  const removeTrustee = (index) => {
+    if (trustees.length > 1) {
+      setTrustees(trustees.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleSealWill = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -29,15 +47,22 @@ const SealCapsule = ({ account }) => {
 
       // Validate inputs
       if (!recipient || !message || !unlockDate) {
-        throw new Error('Please fill in all fields!');
+        throw new Error('Please fill in all required fields!');
       }
 
-      // Validate recipient address format
-      if (!/^0x[a-fA-F0-9]{40}$/.test(recipient)) {
-        throw new Error('Invalid recipient address format!');
+      // Filter out empty trustees
+      const validTrustees = trustees.filter(t => t.trim() !== '');
+      if (validTrustees.length < requiredApprovals) {
+        throw new Error('Not enough trustees for required approvals!');
       }
 
-      // Convert unlock date to timestamp
+      // Validate trustee addresses
+      for (const trustee of validTrustees) {
+        if (!/^0x[a-fA-F0-9]{40}$/.test(trustee)) {
+          throw new Error(`Invalid trustee address: ${trustee}`);
+        }
+      }
+
       const unlockTimestamp = Math.floor(new Date(unlockDate).getTime() / 1000);
       const currentTimestamp = Math.floor(Date.now() / 1000);
 
@@ -45,24 +70,21 @@ const SealCapsule = ({ account }) => {
         throw new Error('Unlock time must be in the future!');
       }
 
-      // Generate encryption key and encrypt message
       const encryptionKey = generateKey();
       const encryptedMessage = encryptMessage(message, encryptionKey);
-
-      // Convert encrypted message to bytes
       const encryptedBytes = new TextEncoder().encode(encryptedMessage);
 
-      // Connect to contract
       const provider = new BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
-      // Call sealCapsule function
-      const tx = await contract.sealCapsule(
+      const tx = await contract.sealMultiSigWill(
         recipient,
         encryptedBytes,
         encryptionKey,
         unlockTimestamp,
+        validTrustees,
+        requiredApprovals,
         {
           value: ethAmount === '0' ? 0 : parseEther(ethAmount)
         }
@@ -72,7 +94,6 @@ const SealCapsule = ({ account }) => {
 
       const receipt = await tx.wait();
 
-      // Extract capsule ID from event
       const event = receipt.logs.find(log => {
         try {
           return contract.interface.parseLog(log)?.name === 'CapsuleSealed';
@@ -87,17 +108,19 @@ const SealCapsule = ({ account }) => {
         capsuleId = parsedEvent.args[0].toString();
       }
 
-      setSuccess(`Capsule sealed successfully! Capsule ID: ${capsuleId}`);
+      setSuccess(`Multi-Sig Will sealed successfully! Capsule ID: ${capsuleId}`);
 
       // Reset form
       setRecipient('');
       setMessage('');
       setUnlockDate('');
       setEthAmount('0');
+      setTrustees(['', '', '']);
+      setRequiredApprovals(2);
 
     } catch (err) {
-      console.error('Error sealing capsule:', err);
-      setError(err.message || 'Failed to seal capsule');
+      console.error('Error sealing will:', err);
+      setError(err.message || 'Failed to seal will');
     } finally {
       setLoading(false);
     }
@@ -105,12 +128,15 @@ const SealCapsule = ({ account }) => {
 
   return (
     <div className="card">
-      <h2>🔒 Seal a Time Capsule</h2>
+      <h2>📜 Multi-Signature Will</h2>
+      <p style={{ color: '#a0a0b0', fontSize: '0.95em', marginBottom: '20px' }}>
+        Set up a will that requires multiple trustees to approve early unlock
+      </p>
 
-      <form onSubmit={handleSealCapsule}>
+      <form onSubmit={handleSealWill}>
         <div style={{ marginBottom: '20px' }}>
           <label style={{ display: 'block', marginBottom: '8px' }}>
-            Recipient Address
+            Beneficiary Address
           </label>
           <input
             type="text"
@@ -124,21 +150,21 @@ const SealCapsule = ({ account }) => {
 
         <div style={{ marginBottom: '20px' }}>
           <label style={{ display: 'block', marginBottom: '8px' }}>
-            Secret Message
+            Will Message
           </label>
           <textarea
             className="input"
-            placeholder="Your secret message will be encrypted..."
+            placeholder="Your will message..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             disabled={loading}
-            rows="5"
+            rows="4"
           />
         </div>
 
         <div style={{ marginBottom: '20px' }}>
           <label style={{ display: 'block', marginBottom: '8px' }}>
-            Unlock Date & Time
+            Auto-Unlock Date (Far Future)
           </label>
           <input
             type="datetime-local"
@@ -151,7 +177,7 @@ const SealCapsule = ({ account }) => {
 
         <div style={{ marginBottom: '20px' }}>
           <label style={{ display: 'block', marginBottom: '8px' }}>
-            ETH Amount to Lock <span style={{ color: '#808090', fontSize: '0.9em' }}>(optional)</span>
+            ETH Amount to Lock
           </label>
           <input
             type="number"
@@ -165,6 +191,63 @@ const SealCapsule = ({ account }) => {
           />
         </div>
 
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px' }}>
+            Trustees
+          </label>
+          {trustees.map((trustee, index) => (
+            <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+              <input
+                type="text"
+                className="input"
+                placeholder={`Trustee ${index + 1} address (0x...)`}
+                value={trustee}
+                onChange={(e) => handleTrusteeChange(index, e.target.value)}
+                disabled={loading}
+                style={{ flex: 1, margin: 0 }}
+              />
+              {trustees.length > 1 && (
+                <button
+                  type="button"
+                  className="button"
+                  onClick={() => removeTrustee(index)}
+                  disabled={loading}
+                  style={{ padding: '10px 20px' }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            className="button"
+            onClick={addTrustee}
+            disabled={loading}
+            style={{ marginTop: '10px' }}
+          >
+            ➕ Add Trustee
+          </button>
+        </div>
+
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px' }}>
+            Required Approvals (M-of-N)
+          </label>
+          <input
+            type="number"
+            className="input"
+            value={requiredApprovals}
+            onChange={(e) => setRequiredApprovals(parseInt(e.target.value))}
+            disabled={loading}
+            min="1"
+            max={trustees.length}
+          />
+          <p style={{ color: '#808090', fontSize: '0.85em', marginTop: '5px' }}>
+            Requires {requiredApprovals} out of {trustees.filter(t => t.trim() !== '').length} trustees to approve early unlock
+          </p>
+        </div>
+
         {error && <div className="error">❌ {error}</div>}
         {success && <div className="success">✅ {success}</div>}
 
@@ -174,11 +257,11 @@ const SealCapsule = ({ account }) => {
           disabled={loading || !account}
           style={{ width: '100%', marginTop: '10px' }}
         >
-          {loading ? '🔄 Sealing...' : '🔐 Seal Capsule'}
+          {loading ? '🔄 Creating Will...' : '📜 Create Multi-Sig Will'}
         </button>
       </form>
     </div>
   );
 };
 
-export default SealCapsule;
+export default SealMultiSigWill;

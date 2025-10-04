@@ -1,179 +1,201 @@
-# Chronos Vault - Deployment Guide
+# Chronos Vault - Complete Deployment Guide
 
 ## Project Overview
-Chronos Vault (时间胶囊) is a decentralized application for locking assets (ETH, NFTs) and encrypted information on the blockchain, accessible only by a designated recipient after a specified time.
+
+Chronos Vault (时间胶囊) is a decentralized application for time-locked assets and encrypted information on blockchain.
+
+### Features
+- 🔒 **Standard Time Capsules** - Lock ETH/NFTs with time-based unlock
+- 📜 **Multi-Signature Wills** - Estate planning with M-of-N trustee approval
+- 📊 **Token Vesting** - Employee compensation with scheduled token release
+
+---
 
 ## Prerequisites
-- Node.js (v16 or higher)
+
+- Node.js (v16+)
 - MetaMask browser extension
-- Hardhat or Truffle for smart contract deployment
-- An Ethereum testnet account with test ETH (e.g., Sepolia, Goerli)
+- Sepolia testnet account with test ETH
+- [Get Sepolia ETH from faucet](https://sepoliafaucet.com/)
 
 ---
 
 ## Part 1: Smart Contract Deployment
 
-### Step 1: Install Hardhat
+### Step 1: Install Dependencies
+
 ```bash
-npm install --save-dev hardhat @nomicfoundation/hardhat-toolbox
-npx hardhat init
+npm install
 ```
 
-### Step 2: Install OpenZeppelin Contracts
+### Step 2: Configure Environment
+
+Create `.env` file in project root:
+
 ```bash
-npm install @openzeppelin/contracts
+# Sepolia RPC URL (from Alchemy or Infura)
+SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/YOUR_API_KEY
+
+# Your MetaMask private key (IMPORTANT: add 0x prefix)
+PRIVATE_KEY=0xYOUR_PRIVATE_KEY_HERE
+
+# Optional: Etherscan API key for verification
+# ETHERSCAN_API_KEY=YOUR_ETHERSCAN_API_KEY
 ```
 
-### Step 3: Configure Hardhat
-Create or update `hardhat.config.js`:
+**⚠️ Security Warning:**
+- Never commit `.env` to version control
+- Never share your private key
+- Use testnet accounts for development
 
-```javascript
-require("@nomicfoundation/hardhat-toolbox");
+### Step 3: Compile Contract
 
-module.exports = {
-  solidity: "0.8.20",
-  networks: {
-    sepolia: {
-      url: "YOUR_ALCHEMY_OR_INFURA_URL",
-      accounts: ["YOUR_PRIVATE_KEY"]
-    }
-  }
-};
+```bash
+npx hardhat compile
 ```
 
-### Step 4: Deploy the Contract
-Create `scripts/deploy.js`:
+### Step 4: Deploy to Sepolia
 
-```javascript
-const hre = require("hardhat");
-
-async function main() {
-  const ChronosVault = await hre.ethers.getContractFactory("ChronosVault");
-  const chronosVault = await ChronosVault.deploy();
-
-  await chronosVault.waitForDeployment();
-
-  console.log("ChronosVault deployed to:", await chronosVault.getAddress());
-}
-
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
-```
-
-Deploy to testnet:
 ```bash
 npx hardhat run scripts/deploy.js --network sepolia
 ```
 
+**Expected Output:**
+```
+✅ ChronosVault deployed to: 0xYOUR_CONTRACT_ADDRESS
+```
+
+**Save this address!** You'll need it for frontend configuration.
+
 ### Step 5: Verify Contract (Optional)
+
 ```bash
-npx hardhat verify --network sepolia DEPLOYED_CONTRACT_ADDRESS
+npx hardhat verify --network sepolia YOUR_CONTRACT_ADDRESS
 ```
 
 ---
 
 ## Part 2: Frontend Setup
 
-### Step 1: Navigate to Frontend Directory
+### Step 1: Navigate to Frontend
+
 ```bash
 cd frontend
 ```
 
 ### Step 2: Install Dependencies
+
 ```bash
 npm install
 ```
 
-### Step 3: Configure Contract Address
-Update `src/contractConfig.js` with your deployed contract address:
+### Step 3: Update Contract Address
 
+The contract address is auto-updated in `src/contractConfig.js` after deployment.
+
+If needed, manually update:
 ```javascript
 export const CONTRACT_ADDRESS = "0xYOUR_DEPLOYED_CONTRACT_ADDRESS";
 ```
 
 ### Step 4: Start Development Server
+
 ```bash
 npm start
 ```
 
-The application will open at `http://localhost:3000`
+Application opens at `http://localhost:3000`
 
 ---
 
-## Part 3: Usage Guide
+## Part 3: Usage Examples
 
-### Sealing a Capsule
-1. Connect your MetaMask wallet
-2. Fill in the form:
-   - **Recipient Address**: The Ethereum address that can unseal the capsule
-   - **Secret Message**: Your encrypted message
-   - **Unlock Date & Time**: When the capsule can be unsealed
-   - **ETH Amount**: Optional ETH to lock (0 for none)
-3. Click "Seal Capsule" and confirm the transaction in MetaMask
-4. Note the Capsule ID from the success message
+### 🔒 Standard Time Capsule
 
-### Viewing and Unsealing a Capsule
-1. Enter the Capsule ID
-2. Click "Query" to view capsule details
-3. If unlock time has passed, click "Unseal Capsule"
-4. After unsealing, click "View Decryption Key" to see the decryption key
-5. The message will be automatically decrypted and displayed
+Lock assets for future unlock:
 
-### Notifications
-- The app automatically listens for unlock events
-- When a capsule you're the recipient of is unsealed, you'll see a notification
-
----
-
-## Part 4: NFT Capsules (Advanced)
-
-To seal a capsule with an NFT:
-
-1. First, approve the ChronosVault contract to transfer your NFT:
-```javascript
-// Using ethers.js
-const nftContract = new Contract(NFT_ADDRESS, ERC721_ABI, signer);
-await nftContract.approve(CHRONOS_VAULT_ADDRESS, TOKEN_ID);
-```
-
-2. Call `sealCapsuleWithNFT` function with:
+1. Connect MetaMask wallet
+2. Click "Time Capsule" tab
+3. Fill in:
    - Recipient address
-   - Encrypted data
-   - Decryption key
-   - Unlock timestamp
-   - NFT contract address
-   - NFT token ID
+   - Secret message (will be encrypted)
+   - Unlock date/time
+   - ETH amount (optional)
+4. Click "Seal Capsule"
+5. Confirm transaction in MetaMask
+6. Save the Capsule ID from success message
+
+### 📜 Multi-Signature Will (Estate Planning)
+
+**Scenario:** Leave assets to heir with trusted friends as executors
+
+**Example:**
+- Beneficiary: Son's address
+- Trustees: 3 trusted friends
+- Required approvals: 2 of 3
+- Auto-unlock: 100 years (far future)
+- Lock: 1 ETH
+
+**Process:**
+1. Owner seals will with ETH
+2. When owner passes away, 2 friends approve unlock
+3. Son receives assets immediately
+
+**Steps:**
+1. Click "Multi-Sig Will" tab
+2. Enter beneficiary address
+3. Add trustee addresses (click "+ Add Trustee")
+4. Set required approvals (e.g., 2 out of 3)
+5. Set far-future unlock date as fallback
+6. Click "Create Multi-Sig Will"
+
+**Trustee Approval:**
+1. Trustee navigates to "View Capsule"
+2. Enters capsule ID
+3. Clicks "Approve Unlock" (only if they're a trustee)
+4. Once enough approvals, beneficiary can unseal
+
+### 📊 Token Vesting (Employee Compensation)
+
+**Scenario:** Grant employee 10,000 tokens over 4 years, 25% each year
+
+**Steps:**
+1. Click "Token Vesting" tab
+2. Enter employee address
+3. Enter token contract address (ERC20)
+4. Add vesting periods:
+   - Year 1: 2,500 tokens @ 2026-01-01
+   - Year 2: 2,500 tokens @ 2027-01-01
+   - Year 3: 2,500 tokens @ 2028-01-01
+   - Year 4: 2,500 tokens @ 2029-01-01
+5. Click "Create Vesting Schedule"
+6. Approve token transfer in MetaMask (2 transactions)
+
+**Employee Claims Tokens:**
+1. Navigate to "View Capsule"
+2. Enter capsule ID
+3. Click "Release Vested Tokens"
+4. Tokens automatically transfer to employee
 
 ---
 
-## Security Considerations
+## Part 4: Network Configuration
 
-1. **Private Keys**: Never commit private keys to version control
-2. **Decryption Keys**: Keys are stored on-chain but only accessible after unsealing
-3. **Gas Costs**: Be aware of transaction costs on mainnet
-4. **Testnet First**: Always test on testnet before mainnet deployment
-5. **Smart Contract Audits**: Consider professional audits for production use
+### MetaMask Setup
 
----
+The app automatically detects if you're on the wrong network.
 
-## Troubleshooting
+**If you see "⚠️ Network: Ethereum Mainnet":**
+1. Click "Switch to Sepolia" button
+2. Confirm in MetaMask
+3. If Sepolia network not found, it will be added automatically
 
-### MetaMask Connection Issues
-- Ensure MetaMask is installed and unlocked
-- Check that you're on the correct network
-- Try refreshing the page
-
-### Transaction Failures
-- Ensure you have enough ETH for gas fees
-- Check that unlock timestamp is in the future
-- Verify recipient address is valid
-
-### Contract Interaction Errors
-- Confirm contract address is correctly configured
-- Ensure you're using the correct network
-- Check that the contract is deployed and verified
+**Manual Sepolia Setup:**
+- Network Name: Sepolia Testnet
+- RPC URL: `https://rpc.sepolia.org`
+- Chain ID: `11155111`
+- Currency Symbol: `ETH`
+- Block Explorer: `https://sepolia.etherscan.io`
 
 ---
 
@@ -181,50 +203,186 @@ await nftContract.approve(CHRONOS_VAULT_ADDRESS, TOKEN_ID);
 
 ```
 CEG4032/
-├── ChronosVault.sol          # Smart contract
-├── DEPLOYMENT.md             # This file
+├── .env                          # Environment variables (DO NOT COMMIT)
+├── hardhat.config.js             # Hardhat configuration
+├── DEPLOYMENT.md                 # This file
+├── README.md                     # Project overview
+├── contracts/
+│   └── ChronosVault.sol         # Main smart contract
+├── scripts/
+│   └── deploy.js                # Deployment script
 └── frontend/
     ├── package.json
     ├── public/
     │   └── index.html
     └── src/
-        ├── App.js            # Main application
-        ├── index.js          # Entry point
-        ├── index.css         # Global styles
-        ├── contractConfig.js # Contract configuration
+        ├── App.js               # Main application with tabs
+        ├── index.js             # Entry point
+        ├── index.css            # Global styles
+        ├── contractConfig.js    # Contract address & ABI
         ├── components/
-        │   ├── ConnectWallet.js
-        │   ├── SealCapsule.js
-        │   ├── ViewCapsule.js
-        │   └── Notification.js
+        │   ├── ConnectWallet.js     # Wallet connection + network detection
+        │   ├── SealCapsule.js       # Standard capsule creation
+        │   ├── SealMultiSigWill.js  # Multi-sig will creation
+        │   ├── SealVesting.js       # Token vesting creation
+        │   ├── ViewCapsule.js       # Capsule viewing/unsealing
+        │   └── Notification.js      # Event notifications
         └── utils/
-            └── encryption.js # Encryption utilities
+            └── encryption.js    # Encryption utilities
 ```
 
 ---
 
-## Next Steps
+## Security Considerations
 
-1. Deploy to testnet and test all features
-2. Consider adding additional features:
-   - Batch sealing multiple capsules
-   - Transfer capsule ownership
-   - Cancel/revoke capsules before unlock
-3. Implement comprehensive error handling
-4. Add user analytics and tracking
-5. Deploy to mainnet after thorough testing
+### Private Keys
+- ✅ Use testnet accounts for development
+- ✅ Keep `.env` in `.gitignore`
+- ❌ Never commit private keys to Git
+- ❌ Never use mainnet keys for testing
+
+### Smart Contract
+- ✅ Test thoroughly on Sepolia first
+- ✅ Verify trustee addresses in multi-sig wills
+- ✅ Test token approvals before vesting
+- ❌ Don't deploy to mainnet without audit
+
+### Decryption Keys
+- Keys stored on-chain but only accessible after unsealing
+- Messages encrypted client-side before submission
+- Recipients can view keys after unlock time
 
 ---
 
-## Support and Resources
+## Troubleshooting
 
-- Ethereum Documentation: https://ethereum.org/developers
-- Hardhat Documentation: https://hardhat.org/docs
-- OpenZeppelin Contracts: https://docs.openzeppelin.com/contracts
-- ethers.js Documentation: https://docs.ethers.org/
-- React Documentation: https://react.dev/
+### Compilation Errors
+
+**Problem:** "Cannot find module 'dotenv'"
+```bash
+npm install dotenv
+```
+
+**Problem:** "Invalid private key"
+- Ensure private key has `0x` prefix in `.env`
+
+### Deployment Errors
+
+**Problem:** "Insufficient funds"
+- Get Sepolia ETH from [faucet](https://sepoliafaucet.com/)
+
+**Problem:** "Network not configured"
+- Check `SEPOLIA_RPC_URL` in `.env`
+- Verify RPC URL is accessible
+
+### MetaMask Issues
+
+**Problem:** Wrong network
+- Click "Switch to Sepolia" in app
+- Or manually switch in MetaMask
+
+**Problem:** Transaction fails
+- Ensure enough ETH for gas
+- Check unlock timestamp is in future
+- Verify recipient address format
+
+### Token Vesting Issues
+
+**Problem:** "Token transfer failed"
+- Ensure you have enough tokens
+- Token contract must be ERC20 compliant
+- Approve tokens before creating vesting
+
+**Problem:** "No tokens to release"
+- Check if unlock time has passed
+- Verify you're the recipient
+
+---
+
+## Testing Checklist
+
+Before mainnet deployment:
+
+- [ ] Deploy contract to Sepolia
+- [ ] Create standard time capsule
+- [ ] Unseal capsule after time passes
+- [ ] Create multi-sig will
+- [ ] Test trustee approval
+- [ ] Create token vesting schedule
+- [ ] Test token release
+- [ ] Verify all events emitted correctly
+- [ ] Test on different browsers
+- [ ] Get smart contract audit (for mainnet)
+
+---
+
+## Gas Costs Estimate (Sepolia)
+
+| Operation | Estimated Gas | Notes |
+|-----------|--------------|-------|
+| Deploy Contract | ~3,500,000 | One-time cost |
+| Seal Standard Capsule | ~150,000 | With ETH |
+| Seal Multi-Sig Will | ~300,000 | 3 trustees |
+| Seal Vesting Schedule | ~400,000 | 4 periods |
+| Unseal Capsule | ~80,000 | With ETH transfer |
+| Approve Multi-Sig | ~50,000 | Per trustee |
+| Release Vested Tokens | ~100,000 | Per claim |
+
+*Gas costs on mainnet will vary based on network congestion*
+
+---
+
+## Real-World Use Cases
+
+### 1. Digital Estate Planning
+Lock access credentials, wallet seeds, or important documents. Designate family members as trustees who can unlock in emergency.
+
+### 2. Employee Equity Compensation
+Lock company tokens with vesting schedule. Employees automatically receive portions over time without manual distribution.
+
+### 3. Trust Fund for Children
+Parents lock assets until child reaches certain age. Multiple family members serve as trustees for early access if needed.
+
+### 4. Business Partnership
+Lock company shares with time-based unlock. Partners can't access until vesting period completes.
+
+### 5. Charitable Giving
+Lock donation for future release to charity. Ensures funds available at specific time.
+
+---
+
+## Support & Resources
+
+### Documentation
+- Ethereum: https://ethereum.org/developers
+- Hardhat: https://hardhat.org/docs
+- OpenZeppelin: https://docs.openzeppelin.com/contracts
+- ethers.js: https://docs.ethers.org/
+- React: https://react.dev/
+
+### Tools
+- Sepolia Faucet: https://sepoliafaucet.com/
+- Sepolia Explorer: https://sepolia.etherscan.io/
+- MetaMask: https://metamask.io/
+
+### Getting Test ETH
+1. Visit https://sepoliafaucet.com/
+2. Sign in with Alchemy account
+3. Enter your wallet address
+4. Receive 0.5 ETH every 24 hours
 
 ---
 
 ## License
-MIT License - Feel free to modify and use for your projects
+
+MIT License - Free to use and modify for your projects
+
+---
+
+## Current Deployment
+
+**Contract Address:** `0x3c7259B276f94b157e2992BfFFDC1F58821626b5`
+**Network:** Sepolia Testnet
+**Deployed:** October 4, 2025
+
+View on Etherscan: https://sepolia.etherscan.io/address/0x3c7259B276f94b157e2992BfFFDC1F58821626b5
