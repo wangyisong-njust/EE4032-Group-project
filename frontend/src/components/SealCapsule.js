@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { BrowserProvider, Contract, parseEther } from 'ethers';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../contractConfig';
 import { generateKey, encryptMessage } from '../utils/encryption';
+import DateTimePicker from './DateTimePicker';
 
 const SealCapsule = ({ account }) => {
   const [recipient, setRecipient] = useState('');
   const [message, setMessage] = useState('');
-  const [unlockDate, setUnlockDate] = useState('');
+  const [unlockDate, setUnlockDate] = useState(null);
   const [ethAmount, setEthAmount] = useState('0');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -38,7 +39,7 @@ const SealCapsule = ({ account }) => {
       }
 
       // Convert unlock date to timestamp
-      const unlockTimestamp = Math.floor(new Date(unlockDate).getTime() / 1000);
+      const unlockTimestamp = Math.floor(unlockDate.getTime() / 1000);
       const currentTimestamp = Math.floor(Date.now() / 1000);
 
       if (unlockTimestamp <= currentTimestamp) {
@@ -92,7 +93,7 @@ const SealCapsule = ({ account }) => {
       // Reset form
       setRecipient('');
       setMessage('');
-      setUnlockDate('');
+      setUnlockDate(null);
       setEthAmount('0');
 
     } catch (err) {
@@ -106,29 +107,46 @@ const SealCapsule = ({ account }) => {
   return (
     <div className="card">
       <h2>🔒 Seal a Time Capsule</h2>
+      <p style={{ color: '#a0a0b0', fontSize: '0.95em', marginBottom: '25px' }}>
+        Create an encrypted time capsule that unlocks at a specific future date
+      </p>
 
       <form onSubmit={handleSealCapsule}>
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>
-            Recipient Address
-          </label>
-          <input
-            type="text"
-            className="input"
-            placeholder="0x..."
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value)}
-            disabled={loading}
-          />
+        <div className="collapsible-section">
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+              Recipient Address *
+            </label>
+            <input
+              type="text"
+              className="input"
+              placeholder="0x... (Who will receive this capsule)"
+              value={recipient}
+              onChange={(e) => setRecipient(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+              Unlock Date & Time *
+            </label>
+            <DateTimePicker
+              selected={unlockDate}
+              onChange={(date) => setUnlockDate(date)}
+              disabled={loading}
+              placeholderText="Select when to unlock the capsule..."
+            />
+          </div>
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>
-            Secret Message
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+            Secret Message *
           </label>
           <textarea
             className="input"
-            placeholder="Your secret message will be encrypted..."
+            placeholder="Write your message here... It will be encrypted on the blockchain."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             disabled={loading}
@@ -137,26 +155,13 @@ const SealCapsule = ({ account }) => {
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>
-            Unlock Date & Time
-          </label>
-          <input
-            type="datetime-local"
-            className="input"
-            value={unlockDate}
-            onChange={(e) => setUnlockDate(e.target.value)}
-            disabled={loading}
-          />
-        </div>
-
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
             ETH Amount to Lock <span style={{ color: '#808090', fontSize: '0.9em' }}>(optional)</span>
           </label>
           <input
             type="number"
             className="input"
-            placeholder="0.0"
+            placeholder="0.0 (Leave blank for message-only capsule)"
             value={ethAmount}
             onChange={(e) => setEthAmount(e.target.value)}
             disabled={loading}

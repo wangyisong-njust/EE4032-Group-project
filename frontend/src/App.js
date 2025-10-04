@@ -72,11 +72,44 @@ function App() {
             </div>
           </>
         ) : (
-          <div className="welcome-card">
-            <div className="welcome-icon">🔐</div>
-            <h2>Welcome to Chronos Vault</h2>
-            <p>Connect your wallet to start creating time capsules</p>
-          </div>
+          <>
+            <div className="welcome-card">
+              <div className="welcome-icon">🔐</div>
+              <h2>Welcome to Chronos Vault</h2>
+              <p>Secure your digital assets with blockchain-guaranteed time locks</p>
+            </div>
+
+            <div className="feature-cards">
+              <div className="feature-card">
+                <div className="feature-card-icon">🔒</div>
+                <h3 className="feature-card-title">Time Capsule</h3>
+                <p className="feature-card-description">
+                  Lock encrypted messages and ETH until a future date. Perfect for digital inheritance,
+                  future gifts, or personal time capsules. Guaranteed by smart contracts—no one can access
+                  it early, not even us.
+                </p>
+              </div>
+
+              <div className="feature-card">
+                <div className="feature-card-icon">📜</div>
+                <h3 className="feature-card-title">Multi-Sig Will</h3>
+                <p className="feature-card-description">
+                  Create a digital will with trustee oversight. Requires multiple trusted contacts to approve
+                  early unlock, or auto-unlocks on a far-future date. Ideal for estate planning with added
+                  security.
+                </p>
+              </div>
+
+              <div className="feature-card">
+                <div className="feature-card-icon">📊</div>
+                <h3 className="feature-card-title">Token Vesting</h3>
+                <p className="feature-card-description">
+                  Schedule automated token releases for employees or investors. Set multiple unlock dates
+                  with specific amounts. Perfect for startup equity, contractor payments, or gradual fund distribution.
+                </p>
+              </div>
+            </div>
+          </>
         )}
 
         <Notification account={account} />

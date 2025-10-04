@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { BrowserProvider, Contract, parseEther } from 'ethers';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../contractConfig';
 import { generateKey, encryptMessage } from '../utils/encryption';
+import DateTimePicker from './DateTimePicker';
 
 const SealMultiSigWill = ({ account }) => {
   const [recipient, setRecipient] = useState('');
   const [message, setMessage] = useState('');
-  const [unlockDate, setUnlockDate] = useState('');
+  const [unlockDate, setUnlockDate] = useState(null);
   const [ethAmount, setEthAmount] = useState('0');
   const [trustees, setTrustees] = useState(['', '', '']);
   const [requiredApprovals, setRequiredApprovals] = useState(2);
@@ -63,7 +64,7 @@ const SealMultiSigWill = ({ account }) => {
         }
       }
 
-      const unlockTimestamp = Math.floor(new Date(unlockDate).getTime() / 1000);
+      const unlockTimestamp = Math.floor(unlockDate.getTime() / 1000);
       const currentTimestamp = Math.floor(Date.now() / 1000);
 
       if (unlockTimestamp <= currentTimestamp) {
@@ -113,7 +114,7 @@ const SealMultiSigWill = ({ account }) => {
       // Reset form
       setRecipient('');
       setMessage('');
-      setUnlockDate('');
+      setUnlockDate(null);
       setEthAmount('0');
       setTrustees(['', '', '']);
       setRequiredApprovals(2);
@@ -134,27 +135,44 @@ const SealMultiSigWill = ({ account }) => {
       </p>
 
       <form onSubmit={handleSealWill}>
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>
-            Beneficiary Address
-          </label>
-          <input
-            type="text"
-            className="input"
-            placeholder="0x..."
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value)}
-            disabled={loading}
-          />
+        <div className="collapsible-section">
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+              Beneficiary Address *
+            </label>
+            <input
+              type="text"
+              className="input"
+              placeholder="0x... (Who inherits this will)"
+              value={recipient}
+              onChange={(e) => setRecipient(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+              Auto-Unlock Date *
+            </label>
+            <DateTimePicker
+              selected={unlockDate}
+              onChange={(date) => setUnlockDate(date)}
+              disabled={loading}
+              placeholderText="Select far future date (e.g., 50 years)..."
+            />
+            <p style={{ color: '#808090', fontSize: '0.85em', marginTop: '5px' }}>
+              Will auto-unlock on this date, or earlier with trustee approvals
+            </p>
+          </div>
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>
-            Will Message
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+            Will Message *
           </label>
           <textarea
             className="input"
-            placeholder="Your will message..."
+            placeholder="Your final message and instructions..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             disabled={loading}
@@ -163,26 +181,13 @@ const SealMultiSigWill = ({ account }) => {
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>
-            Auto-Unlock Date (Far Future)
-          </label>
-          <input
-            type="datetime-local"
-            className="input"
-            value={unlockDate}
-            onChange={(e) => setUnlockDate(e.target.value)}
-            disabled={loading}
-          />
-        </div>
-
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>
-            ETH Amount to Lock
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+            ETH Amount to Lock <span style={{ color: '#808090', fontSize: '0.9em' }}>(optional)</span>
           </label>
           <input
             type="number"
             className="input"
-            placeholder="0.0"
+            placeholder="0.0 (Inheritance amount)"
             value={ethAmount}
             onChange={(e) => setEthAmount(e.target.value)}
             disabled={loading}
@@ -191,61 +196,66 @@ const SealMultiSigWill = ({ account }) => {
           />
         </div>
 
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>
-            Trustees
-          </label>
-          {trustees.map((trustee, index) => (
-            <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-              <input
-                type="text"
-                className="input"
-                placeholder={`Trustee ${index + 1} address (0x...)`}
-                value={trustee}
-                onChange={(e) => handleTrusteeChange(index, e.target.value)}
-                disabled={loading}
-                style={{ flex: 1, margin: 0 }}
-              />
-              {trustees.length > 1 && (
-                <button
-                  type="button"
-                  className="button"
-                  onClick={() => removeTrustee(index)}
+        <div className="collapsible-section">
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+              Trustees *
+            </label>
+            <p style={{ color: '#808090', fontSize: '0.85em', marginBottom: '10px' }}>
+              Add trusted contacts who can approve early unlock (e.g., family, lawyers)
+            </p>
+            {trustees.map((trustee, index) => (
+              <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                <input
+                  type="text"
+                  className="input"
+                  placeholder={`Trustee ${index + 1} address (0x...)`}
+                  value={trustee}
+                  onChange={(e) => handleTrusteeChange(index, e.target.value)}
                   disabled={loading}
-                  style={{ padding: '10px 20px' }}
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          ))}
-          <button
-            type="button"
-            className="button"
-            onClick={addTrustee}
-            disabled={loading}
-            style={{ marginTop: '10px' }}
-          >
-            ➕ Add Trustee
-          </button>
-        </div>
+                  style={{ flex: 1, margin: 0 }}
+                />
+                {trustees.length > 1 && (
+                  <button
+                    type="button"
+                    className="button"
+                    onClick={() => removeTrustee(index)}
+                    disabled={loading}
+                    style={{ padding: '10px 20px' }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              className="button"
+              onClick={addTrustee}
+              disabled={loading}
+              style={{ marginTop: '10px' }}
+            >
+              ➕ Add Trustee
+            </button>
+          </div>
 
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>
-            Required Approvals (M-of-N)
-          </label>
-          <input
-            type="number"
-            className="input"
-            value={requiredApprovals}
-            onChange={(e) => setRequiredApprovals(parseInt(e.target.value))}
-            disabled={loading}
-            min="1"
-            max={trustees.length}
-          />
-          <p style={{ color: '#808090', fontSize: '0.85em', marginTop: '5px' }}>
-            Requires {requiredApprovals} out of {trustees.filter(t => t.trim() !== '').length} trustees to approve early unlock
-          </p>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+              Required Approvals (M-of-N) *
+            </label>
+            <input
+              type="number"
+              className="input"
+              value={requiredApprovals}
+              onChange={(e) => setRequiredApprovals(parseInt(e.target.value))}
+              disabled={loading}
+              min="1"
+              max={trustees.length}
+            />
+            <p style={{ color: '#808090', fontSize: '0.85em', marginTop: '5px' }}>
+              Requires {requiredApprovals} out of {trustees.filter(t => t.trim() !== '').length} trustees to approve early unlock
+            </p>
+          </div>
         </div>
 
         {error && <div className="error">❌ {error}</div>}

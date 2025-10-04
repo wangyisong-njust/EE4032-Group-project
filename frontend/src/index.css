@@ -350,6 +350,166 @@ label {
   }
 }
 
+/* Date Time Picker Styling */
+.datetime-wrapper {
+  width: 100%;
+}
+
+.datetime-picker {
+  width: 100% !important;
+}
+
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker__input-container {
+  width: 100%;
+}
+
+.react-datepicker {
+  background: rgba(30, 30, 46, 0.95);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: 12px;
+  font-family: inherit;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.react-datepicker__header {
+  background: rgba(139, 92, 246, 0.1);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: 12px 12px 0 0;
+}
+
+.react-datepicker__current-month,
+.react-datepicker-time__header,
+.react-datepicker__day-name {
+  color: #c4b5fd;
+  font-weight: 600;
+}
+
+.react-datepicker__day {
+  color: #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.react-datepicker__day:hover {
+  background: rgba(167, 139, 250, 0.2);
+  color: #fff;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.react-datepicker__day--disabled {
+  color: #606080;
+}
+
+.react-datepicker__time-container {
+  border-left: 1px solid rgba(167, 139, 250, 0.2);
+}
+
+.react-datepicker__time-list-item {
+  color: #e0e0e0;
+  transition: all 0.2s ease;
+}
+
+.react-datepicker__time-list-item:hover {
+  background: rgba(167, 139, 250, 0.2) !important;
+}
+
+.react-datepicker__time-list-item--selected {
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%) !important;
+  font-weight: 600;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: #a78bfa;
+}
+
+.react-datepicker__navigation:hover *::before {
+  border-color: #c4b5fd;
+}
+
+/* Feature Cards on Homepage */
+.feature-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  margin: 40px 0;
+}
+
+.feature-card {
+  background: rgba(30, 30, 46, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: 16px;
+  padding: 30px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  backdrop-filter: blur(20px);
+}
+
+.feature-card:hover {
+  border-color: rgba(167, 139, 250, 0.5);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(139, 92, 246, 0.25);
+}
+
+.feature-card-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.feature-card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.feature-card-description {
+  color: #a0a0b0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Collapsible Sections */
+.collapsible-section {
+  background: rgba(139, 92, 246, 0.05);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.collapsible-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.collapsible-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #c4b5fd;
+}
+
+.collapsible-content {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(167, 139, 250, 0.1);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .hero-title {
@@ -374,5 +534,9 @@ label {
 
   .tab-button {
     width: 100%;
+  }
+
+  .feature-cards {
+    grid-template-columns: 1fr;
   }
 }

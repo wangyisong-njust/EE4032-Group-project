@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { BrowserProvider, Contract } from 'ethers';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../contractConfig';
 import { generateKey, encryptMessage } from '../utils/encryption';
+import DateTimePicker from './DateTimePicker';
 
 const SealVesting = ({ account }) => {
   const [recipient, setRecipient] = useState('');
   const [message, setMessage] = useState('');
   const [tokenAddress, setTokenAddress] = useState('');
   const [vestingPeriods, setVestingPeriods] = useState([
-    { date: '', amount: '' },
-    { date: '', amount: '' },
+    { date: null, amount: '' },
+    { date: null, amount: '' },
   ]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -17,12 +18,16 @@ const SealVesting = ({ account }) => {
 
   const handlePeriodChange = (index, field, value) => {
     const newPeriods = [...vestingPeriods];
-    newPeriods[index][field] = value;
+    if (field === 'date') {
+      newPeriods[index][field] = value;
+    } else {
+      newPeriods[index][field] = value;
+    }
     setVestingPeriods(newPeriods);
   };
 
   const addPeriod = () => {
-    setVestingPeriods([...vestingPeriods, { date: '', amount: '' }]);
+    setVestingPeriods([...vestingPeriods, { date: null, amount: '' }]);
   };
 
   const removePeriod = (index) => {
@@ -71,7 +76,7 @@ const SealVesting = ({ account }) => {
       const amounts = [];
 
       for (const period of validPeriods) {
-        const timestamp = Math.floor(new Date(period.date).getTime() / 1000);
+        const timestamp = Math.floor(period.date.getTime() / 1000);
         const currentTimestamp = Math.floor(Date.now() / 1000);
 
         if (timestamp <= currentTimestamp) {
@@ -142,8 +147,8 @@ const SealVesting = ({ account }) => {
       setMessage('');
       setTokenAddress('');
       setVestingPeriods([
-        { date: '', amount: '' },
-        { date: '', amount: '' },
+        { date: null, amount: '' },
+        { date: null, amount: '' },
       ]);
 
     } catch (err) {
@@ -219,13 +224,11 @@ const SealVesting = ({ account }) => {
                 <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em' }}>
                   Unlock Date {index + 1}
                 </label>
-                <input
-                  type="datetime-local"
-                  className="input"
-                  value={period.date}
-                  onChange={(e) => handlePeriodChange(index, 'date', e.target.value)}
+                <DateTimePicker
+                  selected={period.date}
+                  onChange={(date) => handlePeriodChange(index, 'date', date)}
                   disabled={loading}
-                  style={{ margin: 0 }}
+                  placeholderText={`Vesting unlock ${index + 1}...`}
                 />
               </div>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
