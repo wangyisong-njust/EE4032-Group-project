@@ -19,7 +19,7 @@ function App() {
       <div className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">
-            <span className="gradient-text">Chronos Vault</span>
+            <span className="gradient-text">Vault of Time</span>
           </h1>
           <p className="hero-subtitle">Decentralized time-locked asset management for individuals, companies, and employees</p>
           <div className="hero-features">
@@ -75,7 +75,7 @@ function App() {
           <>
             <div className="welcome-card">
               <div className="welcome-icon">🔐</div>
-              <h2>Welcome to Chronos Vault</h2>
+              <h2>Welcome to Vault of Time</h2>
               <p>Three powerful blockchain solutions for time-locked asset management</p>
               <p style={{ fontSize: '0.9em', color: '#a0a0b0', marginTop: '10px' }}>
                 Connect your wallet to get started →

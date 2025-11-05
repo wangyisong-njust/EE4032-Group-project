@@ -1,4 +1,4 @@
-# ⏰ Chronos Vault
+# ⏰ Vault of Time
 
 > A decentralized blockchain platform for time-locked asset management, multi-signature governance, and automated token distribution
 
@@ -8,7 +8,7 @@
 
 ## 🎯 Overview
 
-**Chronos Vault** is a comprehensive decentralized application (dApp) that provides three powerful blockchain-based solutions:
+**Vault of Time** is a comprehensive decentralized application (dApp) that provides three powerful blockchain-based solutions:
 
 1. **For Individuals and Personal Use** - Time-locked encrypted capsules for personal goals and life planning
 2. **For Companies, Shareholders, and Boards of Directors** - Multi-signature governance for organizational decisions
@@ -147,7 +147,7 @@ Employees are protected from company financial distress:
 ❌ Company changes terms → Employee has no protection
 ```
 
-**Chronos Vault Solution:**
+**Vault of Time Solution:**
 ```
 ✅ Tokens locked in smart contract at grant date
 ✅ Automatic release on schedule, no company action needed
@@ -420,7 +420,7 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 ---
 
-## 🌟 Why Chronos Vault?
+## 🌟 Why Vault of Time?
 
 ### For Individuals
 - **Peace of Mind**: Automate inheritance and estate planning

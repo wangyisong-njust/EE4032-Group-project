@@ -1,6 +1,6 @@
-# ⚡ Quick Start Guide - Chronos Vault
+# ⚡ Quick Start Guide - Vault of Time
 
-Get up and running with Chronos Vault in 10 minutes! This guide covers all three features: Time Capsules, Multi-Sig Governance, and Token Vesting.
+Get up and running with Vault of Time in 10 minutes! This guide covers all three features: Time Capsules, Multi-Sig Governance, and Token Vesting.
 
 ---
 

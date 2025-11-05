@@ -1,8 +1,8 @@
-# Chronos Vault - Complete Deployment Guide
+# Vault of Time - Complete Deployment Guide
 
 ## Project Overview
 
-Chronos Vault (时间胶囊) is a decentralized application for time-locked assets and encrypted information on blockchain.
+Vault of Time (时间胶囊) is a decentralized application for time-locked assets and encrypted information on blockchain.
 
 ### Features
 - 🔒 **Standard Time Capsules** - Lock ETH/NFTs with time-based unlock
@@ -62,7 +62,7 @@ npx hardhat run scripts/deploy.js --network sepolia
 
 **Expected Output:**
 ```
-✅ ChronosVault deployed to: 0xYOUR_CONTRACT_ADDRESS
+✅ VaultOfTime deployed to: 0xYOUR_CONTRACT_ADDRESS
 ```
 
 **Save this address!** You'll need it for frontend configuration.

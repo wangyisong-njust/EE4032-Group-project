@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
- * @title ChronosVault
+ * @title VaultOfTime
  * @dev Enhanced time capsule with multi-sig unlock and token vesting
  */
 contract ChronosVault is IERC721Receiver {

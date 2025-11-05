@@ -151,7 +151,7 @@ const ConnectWallet = ({ onAccountChange }) => {
 
   return (
     <div className="card">
-      <h2 style={{ marginBottom: '20px' }}>Chronos Vault</h2>
+      <h2 style={{ marginBottom: '20px' }}>Vault of Time</h2>
 
       {error && <div className="error">❌ {error}</div>}
 
