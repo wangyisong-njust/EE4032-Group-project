@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { BrowserProvider, Contract } from 'ethers';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../contractConfig';
-import { generateKey, encryptMessage } from '../utils/encryption';
+import { encryptMessage } from '../utils/encryption';
 import DateTimePicker from './DateTimePicker';
 
 const SealVesting = ({ account }) => {
   const [recipient, setRecipient] = useState('');
+  const [recipientPublicKey, setRecipientPublicKey] = useState('');
   const [message, setMessage] = useState('');
   const [tokenAddress, setTokenAddress] = useState('');
   const [vestingPeriods, setVestingPeriods] = useState([
@@ -58,12 +59,25 @@ const SealVesting = ({ account }) => {
         throw new Error('Please connect your wallet first!');
       }
 
-      if (!recipient || !message || !tokenAddress) {
-        throw new Error('Please fill in all required fields!');
+      if (!recipient || !message || !tokenAddress || !recipientPublicKey) {
+        throw new Error('Please fill in all required fields including recipient public key!');
       }
 
       if (!/^0x[a-fA-F0-9]{40}$/.test(tokenAddress)) {
         throw new Error('Invalid token address format!');
+      }
+
+      // Check if token address is same as user's address (common mistake)
+      const currentAddress = await (new BrowserProvider(window.ethereum)).getSigner().then(s => s.getAddress());
+      if (tokenAddress.toLowerCase() === currentAddress.toLowerCase()) {
+        throw new Error('Token address cannot be your wallet address! Please enter the ERC20 token contract address.');
+      }
+
+      // Check if token address is a contract
+      const provider = new BrowserProvider(window.ethereum);
+      const code = await provider.getCode(tokenAddress);
+      if (code === '0x') {
+        throw new Error('The address you entered is not a contract! Please enter a valid ERC20 token contract address. If you need a test token, you must deploy one first.');
       }
 
       // Validate periods
@@ -90,11 +104,13 @@ const SealVesting = ({ account }) => {
         amounts.push(amountWei);
       }
 
-      const encryptionKey = generateKey();
-      const encryptedMessage = encryptMessage(message, encryptionKey);
-      const encryptedBytes = new TextEncoder().encode(encryptedMessage);
+      const encryptedMessage = await encryptMessage(message, recipientPublicKey);
 
-      const provider = new BrowserProvider(window.ethereum);
+      // Convert JSON string to UTF-8 bytes for contract storage
+      const { toUtf8Bytes } = await import('ethers');
+      const encryptedMessageBytes = toUtf8Bytes(encryptedMessage);
+
+      // Reuse provider from line 77
       const signer = await provider.getSigner();
 
       // First approve token transfer
@@ -116,8 +132,7 @@ const SealVesting = ({ account }) => {
       setSuccess('Creating vesting schedule...');
       const tx = await contract.sealVestingSchedule(
         recipient,
-        encryptedBytes,
-        encryptionKey,
+        encryptedMessageBytes,  // bytes format
         tokenAddress,
         timestamps,
         amounts
@@ -144,6 +159,7 @@ const SealVesting = ({ account }) => {
 
       // Reset form
       setRecipient('');
+      setRecipientPublicKey('');
       setMessage('');
       setTokenAddress('');
       setVestingPeriods([
@@ -161,58 +177,125 @@ const SealVesting = ({ account }) => {
 
   return (
     <div className="card">
-      <h2>📊 Token Vesting Schedule</h2>
-      <p style={{ color: '#a0a0b0', fontSize: '0.95em', marginBottom: '20px' }}>
-        Create a vesting schedule for employee token distribution
+      <h2>📊 For Employee Compensation and Equity Incentive Programs</h2>
+      <p style={{ color: '#a0a0b0', fontSize: '0.95em', marginBottom: '15px' }}>
+        Automated token vesting schedules for employee equity, contractor payments, and long-term incentive programs. Bankruptcy-proof and fully automated.
       </p>
+
+      <div style={{
+        background: 'rgba(236, 72, 153, 0.08)',
+        border: '1px solid rgba(236, 72, 153, 0.2)',
+        borderRadius: '12px',
+        padding: '15px',
+        marginBottom: '25px'
+      }}>
+        <h3 style={{ margin: '0 0 10px 0', fontSize: '1em', color: '#f9a8d4' }}>💡 Use Cases & Benefits</h3>
+        <ul style={{ margin: '0', paddingLeft: '20px', color: '#a0a0b0', fontSize: '0.9em', lineHeight: '1.7' }}>
+          <li><strong>Employee Equity:</strong> Multi-year vesting schedules with quarterly or annual token releases</li>
+          <li><strong>Advisor & Contractor Compensation:</strong> Vesting with cliff periods and milestone-based releases</li>
+          <li><strong>Risk Protection:</strong> Tokens secured in smart contract, protected from company bankruptcy</li>
+          <li><strong>Fully Automated:</strong> Recipients claim directly without company involvement or manual distribution</li>
+        </ul>
+      </div>
 
       <form onSubmit={handleSealVesting}>
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>
-            Employee Address
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+            Employee / Recipient Address *
           </label>
           <input
             type="text"
             className="input"
-            placeholder="0x..."
+            placeholder="0x... (Employee, contractor, or advisor wallet)"
             value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
             disabled={loading}
           />
+          <p style={{ fontSize: '0.8em', color: '#808090', margin: '5px 0 0 0' }}>
+            👤 This wallet will receive vested tokens on the schedule below
+          </p>
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>
-            Vesting Terms
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+            Recipient's Public Key *
+          </label>
+          <input
+            type="text"
+            className="input"
+            placeholder="Paste recipient's public key here"
+            value={recipientPublicKey}
+            onChange={(e) => setRecipientPublicKey(e.target.value)}
+            disabled={loading}
+          />
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            padding: '10px',
+            borderRadius: '8px',
+            marginTop: '8px'
+          }}>
+            <p style={{ fontSize: '0.85em', color: '#fca5a5', margin: '0', lineHeight: '1.5' }}>
+              ⚠️ <strong>Public key must be from the recipient's account!</strong> Otherwise they cannot decrypt. Ask the recipient to export their public key from the View Capsules page.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+            Employment Terms / Grant Details *
           </label>
           <textarea
             className="input"
-            placeholder="Employment terms and vesting conditions..."
+            placeholder="Stock option agreement, employment terms, vesting conditions..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             disabled={loading}
             rows="3"
           />
+          <p style={{ fontSize: '0.8em', color: '#808090', margin: '5px 0 0 0' }}>
+            💡 Examples: "Employee stock options - 4yr vest", "Advisor grant - 2yr w/ 6mo cliff"
+          </p>
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>
-            Token Contract Address (ERC20)
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+            Token Contract Address (ERC20) *
           </label>
           <input
             type="text"
             className="input"
-            placeholder="0x..."
+            placeholder="0x... (ERC20 token contract, NOT your wallet address!)"
             value={tokenAddress}
             onChange={(e) => setTokenAddress(e.target.value)}
             disabled={loading}
           />
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            padding: '10px',
+            borderRadius: '8px',
+            marginTop: '8px'
+          }}>
+            <p style={{ fontSize: '0.85em', color: '#fca5a5', margin: '0 0 8px 0', lineHeight: '1.5' }}>
+              ⚠️ <strong>IMPORTANT: Enter the ERC20 token contract address, NOT your wallet address!</strong>
+            </p>
+            <p style={{ fontSize: '0.8em', color: '#fca5a5', margin: '0', lineHeight: '1.5' }}>
+              💡 If you don't have a token contract, you need to deploy a test ERC20 token first. You can use Remix or other tools to deploy.
+            </p>
+          </div>
+          <p style={{ fontSize: '0.8em', color: '#808090', margin: '8px 0 0 0' }}>
+            🪙 Must be an ERC20-compatible token contract. Ensure you have approved tokens for this contract.
+          </p>
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px' }}>
-            Vesting Schedule
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+            Vesting Schedule *
           </label>
+          <p style={{ fontSize: '0.85em', color: '#808090', marginBottom: '10px' }}>
+            📅 Define when and how many tokens unlock. Common: 4 years with quarterly distributions.
+          </p>
           {vestingPeriods.map((period, index) => (
             <div key={index} style={{
               background: 'rgba(139, 92, 246, 0.05)',
@@ -221,25 +304,25 @@ const SealVesting = ({ account }) => {
               marginBottom: '10px'
             }}>
               <div style={{ marginBottom: '10px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em' }}>
-                  Unlock Date {index + 1}
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', fontWeight: '600' }}>
+                  📆 Unlock Date {index + 1}
                 </label>
                 <DateTimePicker
                   selected={period.date}
                   onChange={(date) => handlePeriodChange(index, 'date', date)}
                   disabled={loading}
-                  placeholderText={`Vesting unlock ${index + 1}...`}
+                  placeholderText={`Year ${Math.floor(index / 4) + 1}, Quarter ${(index % 4) + 1}...`}
                 />
               </div>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em' }}>
-                    Token Amount
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', fontWeight: '600' }}>
+                    🪙 Token Amount
                   </label>
                   <input
                     type="number"
                     className="input"
-                    placeholder="0.0"
+                    placeholder="2500 (e.g., 10,000 total / 4 years)"
                     value={period.amount}
                     onChange={(e) => handlePeriodChange(index, 'amount', e.target.value)}
                     disabled={loading}
@@ -269,7 +352,7 @@ const SealVesting = ({ account }) => {
             disabled={loading}
             style={{ marginTop: '10px' }}
           >
-            ➕ Add Period
+            ➕ Add Vesting Period
           </button>
         </div>
 
@@ -280,7 +363,10 @@ const SealVesting = ({ account }) => {
           borderRadius: '10px',
           marginBottom: '20px'
         }}>
-          <strong>Total Tokens:</strong> {getTotalAmount().toLocaleString()}
+          <strong>Total Tokens to Vest:</strong> {getTotalAmount().toLocaleString()}
+          <p style={{ fontSize: '0.85em', color: '#a0a0b0', marginTop: '5px', marginBottom: 0 }}>
+            💡 These tokens will be locked in the smart contract and released automatically
+          </p>
         </div>
 
         {error && <div className="error">❌ {error}</div>}
@@ -292,8 +378,11 @@ const SealVesting = ({ account }) => {
           disabled={loading || !account}
           style={{ width: '100%', marginTop: '10px' }}
         >
-          {loading ? '🔄 Creating Schedule...' : '📊 Create Vesting Schedule'}
+          {loading ? '🔄 Locking Tokens & Creating Schedule...' : '📊 Lock Tokens & Create Vesting'}
         </button>
+        <p style={{ fontSize: '0.8em', color: '#808090', marginTop: '10px', textAlign: 'center' }}>
+          ✅ Tokens will be transferred to the smart contract and locked until vesting dates
+        </p>
       </form>
     </div>
   );

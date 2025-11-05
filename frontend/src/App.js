@@ -21,11 +21,11 @@ function App() {
           <h1 className="hero-title">
             <span className="gradient-text">Chronos Vault</span>
           </h1>
-          <p className="hero-subtitle">Lock your secrets in time, unlock them in the future</p>
+          <p className="hero-subtitle">Decentralized time-locked asset management for individuals, companies, and employees</p>
           <div className="hero-features">
-            <div className="feature-badge">🔒 Time Capsules</div>
-            <div className="feature-badge">📜 Multi-Sig Wills</div>
-            <div className="feature-badge">📊 Token Vesting</div>
+            <div className="feature-badge">🔒 Personal Assets</div>
+            <div className="feature-badge">📜 Corporate Governance</div>
+            <div className="feature-badge">📊 Employee Equity</div>
           </div>
         </div>
       </div>
@@ -76,37 +76,53 @@ function App() {
             <div className="welcome-card">
               <div className="welcome-icon">🔐</div>
               <h2>Welcome to Chronos Vault</h2>
-              <p>Secure your digital assets with blockchain-guaranteed time locks</p>
+              <p>Three powerful blockchain solutions for time-locked asset management</p>
+              <p style={{ fontSize: '0.9em', color: '#a0a0b0', marginTop: '10px' }}>
+                Connect your wallet to get started →
+              </p>
             </div>
 
             <div className="feature-cards">
               <div className="feature-card">
                 <div className="feature-card-icon">🔒</div>
-                <h3 className="feature-card-title">Time Capsule</h3>
+                <h3 className="feature-card-title">For Individuals and Personal Use</h3>
                 <p className="feature-card-description">
-                  Lock encrypted messages and ETH until a future date. Perfect for digital inheritance,
-                  future gifts, or personal time capsules. Guaranteed by smart contracts—no one can access
-                  it early, not even us.
+                  Time-locked encrypted messages and assets for personal goals and life planning.
                 </p>
+                <ul style={{ fontSize: '0.9em', color: '#a0a0b0', marginTop: '10px', paddingLeft: '20px', textAlign: 'left' }}>
+                  <li>Personal time capsules & future messages</li>
+                  <li>Digital wills & inheritance planning</li>
+                  <li>Scheduled payments & trust funds</li>
+                  <li>Escrow for personal contracts & agreements</li>
+                </ul>
               </div>
 
               <div className="feature-card">
                 <div className="feature-card-icon">📜</div>
-                <h3 className="feature-card-title">Multi-Sig Will</h3>
+                <h3 className="feature-card-title">For Companies, Shareholders, and Boards of Directors</h3>
                 <p className="feature-card-description">
-                  Create a digital will with trustee oversight. Requires multiple trusted contacts to approve
-                  early unlock, or auto-unlocks on a far-future date. Ideal for estate planning with added
-                  security.
+                  Multi-signature governance for corporate decisions requiring trustee consensus.
                 </p>
+                <ul style={{ fontSize: '0.9em', color: '#a0a0b0', marginTop: '10px', paddingLeft: '20px', textAlign: 'left' }}>
+                  <li>Board voting on dividend distribution</li>
+                  <li>Shareholder approval for fund withdrawals</li>
+                  <li>Multi-party agreement enforcement</li>
+                  <li>Emergency fund access with consensus</li>
+                </ul>
               </div>
 
               <div className="feature-card">
                 <div className="feature-card-icon">📊</div>
-                <h3 className="feature-card-title">Token Vesting</h3>
+                <h3 className="feature-card-title">For Employee Compensation and Equity Incentive Programs</h3>
                 <p className="feature-card-description">
-                  Schedule automated token releases for employees or investors. Set multiple unlock dates
-                  with specific amounts. Perfect for startup equity, contractor payments, or gradual fund distribution.
+                  Automated token vesting schedules for employee equity, compensation, and long-term incentives.
                 </p>
+                <ul style={{ fontSize: '0.9em', color: '#a0a0b0', marginTop: '10px', paddingLeft: '20px', textAlign: 'left' }}>
+                  <li>Employee stock options (ESO) with multi-year vesting</li>
+                  <li>Advisor & contractor compensation with cliff periods</li>
+                  <li>Bankruptcy-proof - secured in smart contract</li>
+                  <li>Fully automated - no manual distribution required</li>
+                </ul>
               </div>
             </div>
           </>

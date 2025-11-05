@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { BrowserProvider, Contract, parseEther } from 'ethers';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../contractConfig';
-import { generateKey, encryptMessage } from '../utils/encryption';
+import { encryptMessage } from '../utils/encryption';
 import DateTimePicker from './DateTimePicker';
 
 const SealMultiSigWill = ({ account }) => {
   const [recipient, setRecipient] = useState('');
+  const [recipientPublicKey, setRecipientPublicKey] = useState('');
   const [message, setMessage] = useState('');
   const [unlockDate, setUnlockDate] = useState(null);
   const [ethAmount, setEthAmount] = useState('0');
@@ -47,8 +48,8 @@ const SealMultiSigWill = ({ account }) => {
       }
 
       // Validate inputs
-      if (!recipient || !message || !unlockDate) {
-        throw new Error('Please fill in all required fields!');
+      if (!recipient || !message || !unlockDate || !recipientPublicKey) {
+        throw new Error('Please fill in all required fields including recipient public key!');
       }
 
       // Filter out empty trustees
@@ -71,9 +72,11 @@ const SealMultiSigWill = ({ account }) => {
         throw new Error('Unlock time must be in the future!');
       }
 
-      const encryptionKey = generateKey();
-      const encryptedMessage = encryptMessage(message, encryptionKey);
-      const encryptedBytes = new TextEncoder().encode(encryptedMessage);
+      const encryptedMessage = await encryptMessage(message, recipientPublicKey);
+
+      // Convert JSON string to UTF-8 bytes for contract storage
+      const { toUtf8Bytes } = await import('ethers');
+      const encryptedMessageBytes = toUtf8Bytes(encryptedMessage);
 
       const provider = new BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
@@ -81,8 +84,7 @@ const SealMultiSigWill = ({ account }) => {
 
       const tx = await contract.sealMultiSigWill(
         recipient,
-        encryptedBytes,
-        encryptionKey,
+        encryptedMessageBytes,  // bytes format
         unlockTimestamp,
         validTrustees,
         requiredApprovals,
@@ -113,6 +115,7 @@ const SealMultiSigWill = ({ account }) => {
 
       // Reset form
       setRecipient('');
+      setRecipientPublicKey('');
       setMessage('');
       setUnlockDate(null);
       setEthAmount('0');
@@ -129,55 +132,102 @@ const SealMultiSigWill = ({ account }) => {
 
   return (
     <div className="card">
-      <h2>📜 Multi-Signature Will</h2>
-      <p style={{ color: '#a0a0b0', fontSize: '0.95em', marginBottom: '20px' }}>
-        Set up a will that requires multiple trustees to approve early unlock
+      <h2>📜 For Companies, Shareholders, and Boards of Directors</h2>
+      <p style={{ color: '#a0a0b0', fontSize: '0.95em', marginBottom: '15px' }}>
+        Multi-signature governance requiring consensus from designated trustees. Perfect for corporate decisions and organizational agreements.
       </p>
+
+      <div style={{
+        background: 'rgba(34, 197, 94, 0.08)',
+        border: '1px solid rgba(34, 197, 94, 0.2)',
+        borderRadius: '12px',
+        padding: '15px',
+        marginBottom: '25px'
+      }}>
+        <h3 style={{ margin: '0 0 10px 0', fontSize: '1em', color: '#86efac' }}>💡 Use Cases</h3>
+        <ul style={{ margin: '0', paddingLeft: '20px', color: '#a0a0b0', fontSize: '0.9em', lineHeight: '1.7' }}>
+          <li><strong>Board Voting:</strong> Require director approval for dividend distributions or major decisions</li>
+          <li><strong>Shareholder Agreements:</strong> Release funds or assets with majority shareholder consent</li>
+          <li><strong>Investor Rights:</strong> Multi-partner approval for capital withdrawal or investment decisions</li>
+          <li><strong>Emergency Access:</strong> Access reserves with supermajority trustee approval</li>
+        </ul>
+      </div>
 
       <form onSubmit={handleSealWill}>
         <div className="collapsible-section">
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
-              Beneficiary Address *
+              Recipient Address *
             </label>
             <input
               type="text"
               className="input"
-              placeholder="0x... (Who inherits this will)"
+              placeholder="0x... (Company account, shareholder, or beneficiary)"
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
               disabled={loading}
             />
+            <p style={{ fontSize: '0.8em', color: '#808090', margin: '5px 0 0 0' }}>
+              💼 Examples: Company treasury, majority shareholder, distribution account
+            </p>
           </div>
 
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
-              Auto-Unlock Date *
+              Recipient's Public Key *
+            </label>
+            <input
+              type="text"
+              className="input"
+              placeholder="Paste recipient's public key here"
+              value={recipientPublicKey}
+              onChange={(e) => setRecipientPublicKey(e.target.value)}
+              disabled={loading}
+            />
+            <div style={{
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              padding: '10px',
+              borderRadius: '8px',
+              marginTop: '8px'
+            }}>
+              <p style={{ fontSize: '0.85em', color: '#fca5a5', margin: '0', lineHeight: '1.5' }}>
+                ⚠️ <strong>Public key must be from the recipient's account!</strong> Otherwise they cannot decrypt. Ask the recipient to export their public key from the View Capsules page.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+              Scheduled Release Date *
             </label>
             <DateTimePicker
               selected={unlockDate}
               onChange={(date) => setUnlockDate(date)}
               disabled={loading}
-              placeholderText="Select far future date (e.g., 50 years)..."
+              placeholderText="Quarterly/Annual distribution date..."
             />
             <p style={{ color: '#808090', fontSize: '0.85em', marginTop: '5px' }}>
-              Will auto-unlock on this date, or earlier with trustee approvals
+              📅 Auto-unlock on this date, or earlier with required trustee approvals
             </p>
           </div>
         </div>
 
         <div style={{ marginBottom: '20px' }}>
           <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
-            Will Message *
+            Message / Details *
           </label>
           <textarea
             className="input"
-            placeholder="Your final message and instructions..."
+            placeholder="Board resolution, distribution terms, shareholder agreement details..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             disabled={loading}
             rows="4"
           />
+          <p style={{ fontSize: '0.8em', color: '#808090', margin: '5px 0 0 0' }}>
+            💡 Examples: "Q4 dividend distribution", "Emergency fund access", "Capital reallocation"
+          </p>
         </div>
 
         <div style={{ marginBottom: '20px' }}>
@@ -187,29 +237,32 @@ const SealMultiSigWill = ({ account }) => {
           <input
             type="number"
             className="input"
-            placeholder="0.0 (Inheritance amount)"
+            placeholder="0.0 (Dividend, profit distribution, or capital amount)"
             value={ethAmount}
             onChange={(e) => setEthAmount(e.target.value)}
             disabled={loading}
             step="0.001"
             min="0"
           />
+          <p style={{ fontSize: '0.8em', color: '#808090', margin: '5px 0 0 0' }}>
+            💰 Use cases: Quarterly dividends, emergency reserves, capital distribution
+          </p>
         </div>
 
         <div className="collapsible-section">
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
-              Trustees *
+              Approvers / Signers *
             </label>
             <p style={{ color: '#808090', fontSize: '0.85em', marginBottom: '10px' }}>
-              Add trusted contacts who can approve early unlock (e.g., family, lawyers)
+              Add board members, shareholders, or partners who can vote on early release
             </p>
             {trustees.map((trustee, index) => (
               <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                 <input
                   type="text"
                   className="input"
-                  placeholder={`Trustee ${index + 1} address (0x...)`}
+                  placeholder={`Approver ${index + 1} address (0x...) - Board member, shareholder, or partner`}
                   value={trustee}
                   onChange={(e) => handleTrusteeChange(index, e.target.value)}
                   disabled={loading}
@@ -235,7 +288,7 @@ const SealMultiSigWill = ({ account }) => {
               disabled={loading}
               style={{ marginTop: '10px' }}
             >
-              ➕ Add Trustee
+              ➕ Add Approver
             </button>
           </div>
 
@@ -253,7 +306,7 @@ const SealMultiSigWill = ({ account }) => {
               max={trustees.length}
             />
             <p style={{ color: '#808090', fontSize: '0.85em', marginTop: '5px' }}>
-              Requires {requiredApprovals} out of {trustees.filter(t => t.trim() !== '').length} trustees to approve early unlock
+              ⚖️ Requires {requiredApprovals} out of {trustees.filter(t => t.trim() !== '').length} approvers to unlock early (M-of-N multisig)
             </p>
           </div>
         </div>
@@ -267,7 +320,7 @@ const SealMultiSigWill = ({ account }) => {
           disabled={loading || !account}
           style={{ width: '100%', marginTop: '10px' }}
         >
-          {loading ? '🔄 Creating Will...' : '📜 Create Multi-Sig Will'}
+          {loading ? '🔄 Creating Governance Contract...' : '📜 Create Multi-Sig Governance'}
         </button>
       </form>
     </div>

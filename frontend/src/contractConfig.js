@@ -1,4 +1,4 @@
-export const CONTRACT_ADDRESS = "0x3c7259B276f94b157e2992BfFFDC1F58821626b5";
+export const CONTRACT_ADDRESS = "0x3C8e9C6322e3501c65a289b360eA931c33B23970";
 
 export const CONTRACT_ABI = [
   {
@@ -159,11 +159,6 @@ export const CONTRACT_ABI = [
         "type": "bytes"
       },
       {
-        "internalType": "string",
-        "name": "decryptionKey",
-        "type": "string"
-      },
-      {
         "internalType": "uint256",
         "name": "unlockTimestamp",
         "type": "uint256"
@@ -192,25 +187,6 @@ export const CONTRACT_ABI = [
         "internalType": "enum ChronosVault.CapsuleType",
         "name": "capsuleType",
         "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_capsuleId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getDecryptionKey",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -402,11 +378,6 @@ export const CONTRACT_ABI = [
         "type": "bytes"
       },
       {
-        "internalType": "string",
-        "name": "_decryptionKey",
-        "type": "string"
-      },
-      {
         "internalType": "uint256",
         "name": "_unlockTimestamp",
         "type": "uint256"
@@ -428,11 +399,6 @@ export const CONTRACT_ABI = [
         "internalType": "bytes",
         "name": "_encryptedData",
         "type": "bytes"
-      },
-      {
-        "internalType": "string",
-        "name": "_decryptionKey",
-        "type": "string"
       },
       {
         "internalType": "uint256",
@@ -468,11 +434,6 @@ export const CONTRACT_ABI = [
         "type": "bytes"
       },
       {
-        "internalType": "string",
-        "name": "_decryptionKey",
-        "type": "string"
-      },
-      {
         "internalType": "uint256",
         "name": "_unlockTimestamp",
         "type": "uint256"
@@ -504,11 +465,6 @@ export const CONTRACT_ABI = [
         "internalType": "bytes",
         "name": "_encryptedData",
         "type": "bytes"
-      },
-      {
-        "internalType": "string",
-        "name": "_decryptionKey",
-        "type": "string"
       },
       {
         "internalType": "address",

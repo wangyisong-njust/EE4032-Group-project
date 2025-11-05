@@ -19,7 +19,6 @@ contract ChronosVault is IERC721Receiver {
         address payable owner;
         address payable recipient;
         bytes encryptedData;
-        string decryptionKey;
         uint256 unlockTimestamp;
         uint256 ethValue;
         address nftContractAddress;
@@ -84,7 +83,6 @@ contract ChronosVault is IERC721Receiver {
     function sealCapsule(
         address payable _recipient,
         bytes memory _encryptedData,
-        string memory _decryptionKey,
         uint256 _unlockTimestamp
     ) public payable {
         require(_unlockTimestamp > block.timestamp, "Unlock time must be in the future");
@@ -94,7 +92,6 @@ contract ChronosVault is IERC721Receiver {
             owner: payable(msg.sender),
             recipient: _recipient,
             encryptedData: _encryptedData,
-            decryptionKey: _decryptionKey,
             unlockTimestamp: _unlockTimestamp,
             ethValue: msg.value,
             nftContractAddress: address(0),
@@ -113,7 +110,6 @@ contract ChronosVault is IERC721Receiver {
     function sealMultiSigWill(
         address payable _recipient,
         bytes memory _encryptedData,
-        string memory _decryptionKey,
         uint256 _unlockTimestamp,
         address[] memory _trustees,
         uint256 _requiredApprovals
@@ -127,7 +123,6 @@ contract ChronosVault is IERC721Receiver {
             owner: payable(msg.sender),
             recipient: _recipient,
             encryptedData: _encryptedData,
-            decryptionKey: _decryptionKey,
             unlockTimestamp: _unlockTimestamp,
             ethValue: msg.value,
             nftContractAddress: address(0),
@@ -184,7 +179,6 @@ contract ChronosVault is IERC721Receiver {
     function sealVestingSchedule(
         address payable _recipient,
         bytes memory _encryptedData,
-        string memory _decryptionKey,
         address _tokenAddress,
         uint256[] memory _unlockTimestamps,
         uint256[] memory _unlockAmounts
@@ -212,7 +206,6 @@ contract ChronosVault is IERC721Receiver {
             owner: payable(msg.sender),
             recipient: _recipient,
             encryptedData: _encryptedData,
-            decryptionKey: _decryptionKey,
             unlockTimestamp: _unlockTimestamps[0],
             ethValue: 0,
             nftContractAddress: address(0),
@@ -275,7 +268,6 @@ contract ChronosVault is IERC721Receiver {
     function sealCapsuleWithNFT(
         address payable _recipient,
         bytes memory _encryptedData,
-        string memory _decryptionKey,
         uint256 _unlockTimestamp,
         address _nftContractAddress,
         uint256 _nftTokenId
@@ -290,7 +282,6 @@ contract ChronosVault is IERC721Receiver {
             owner: payable(msg.sender),
             recipient: _recipient,
             encryptedData: _encryptedData,
-            decryptionKey: _decryptionKey,
             unlockTimestamp: _unlockTimestamp,
             ethValue: 0,
             nftContractAddress: _nftContractAddress,
@@ -340,21 +331,6 @@ contract ChronosVault is IERC721Receiver {
         emit CapsuleUnsealed(_capsuleId, capsule.recipient);
     }
 
-    /**
-     * @dev Get the decryption key
-     */
-    function getDecryptionKey(uint256 _capsuleId) public view returns (string memory) {
-        require(_capsuleId < capsuleCount, "Capsule does not exist");
-        Capsule storage capsule = capsules[_capsuleId];
-
-        if (capsule.capsuleType == CapsuleType.VESTING) {
-            require(vestingSchedules[_capsuleId].releasedAmount > 0, "No tokens released yet");
-        } else {
-            require(capsule.isUnsealed, "Capsule must be unsealed first");
-        }
-
-        return capsule.decryptionKey;
-    }
 
     /**
      * @dev Get vesting schedule details
